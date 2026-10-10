@@ -184,7 +184,12 @@ function NovaVagaPage() {
       <p className="text-sm text-muted-foreground">Preencha os detalhes abaixo.</p>
 
       <form onSubmit={submit} className="mt-6 space-y-5 rounded-2xl border border-border bg-card p-6">
-        <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-2">\n          <Field label="Colar link da vaga para importar automaticamente">\n            <div className="relative">\n              <Link2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />\n              <Input value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} placeholder="https://site.com/vaga..." className="pl-9" inputMode="url" />\n            </div>\n          </Field>\n          <p className="text-xs text-muted-foreground">Ao colar o link, tentamos preencher os campos automaticamente. O link original não será guardado na vaga publicada.</p>\n          {importMessage && <p role="status" aria-live="polite" className={`text-sm ${importing ? "text-muted-foreground" : "text-foreground"}`}>{importing && <Loader2 className="mr-1 inline h-3.5 w-3.5 animate-spin" />}{!importing && importMessage.startsWith("Dados importados") && <Sparkles className="mr-1 inline h-3.5 w-3.5" />}{importMessage}</p>}\n        </div>\n\n        <div className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-2">
+          <Field label="Colar link da vaga para importar automaticamente">
+            <div className="relative">
+              <Link2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} placeholder="https://site.com/vaga..." className="pl-9" inputMode="url" />
+            </div>\n          </Field>\n          <p className="text-xs text-muted-foreground">Ao colar o link, tentamos preencher os campos automaticamente. O link original não será guardado na vaga publicada.</p>\n          {importMessage && <p role="status" aria-live="polite" className={`text-sm ${importing ? "text-muted-foreground" : "text-foreground"}`}>{importing && <Loader2 className="mr-1 inline h-3.5 w-3.5 animate-spin" />}{!importing && importMessage.startsWith("Dados importados") && <Sparkles className="mr-1 inline h-3.5 w-3.5" />}{importMessage}</p>}\n        </div>\n\n        <div className="grid gap-4 md:grid-cols-2">
           <Field label="Título da vaga *">
             <Input value={form.titulo} onChange={(e) => update("titulo", e.target.value)} required />
           </Field>
