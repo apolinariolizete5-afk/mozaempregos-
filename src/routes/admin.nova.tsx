@@ -89,7 +89,7 @@ function NovaVagaPage() {
           email_candidatura: imported.email_candidatura || current.email_candidatura,
           imagem_url: imported.imagem_url || current.imagem_url,
         }));
-        if (imported.imagem_url && !file) setPreview(imported.imagem_url);
+        if (imported.imagem_url) { setFile(null); setPreview(imported.imagem_url); }
         setImportMessage("Dados importados. Reveja os campos abaixo e corrija o que faltar antes de publicar.");
       } catch (error) {
         if (sequence !== importSequence.current) return;
