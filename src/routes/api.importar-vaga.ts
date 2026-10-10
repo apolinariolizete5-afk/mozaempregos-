@@ -47,10 +47,10 @@ function plainText(value: unknown): string {
 }
 
 function meta(html: string, key: string): string {
-  const tags = html.match(/<meta\\b[^>]*>/gi) ?? [];
+  const tags = html.match(/<meta\b[^>]*>/gi) ?? [];
   for (const tag of tags) {
-    const name = tag.match(/\\b(?:property|name)\\s*=\\s*["']([^"']+)["']/i)?.[1];
-    const value = tag.match(/\\bcontent\\s*=\\s*["']([^"']*)["']/i)?.[1];
+    const name = tag.match(/\b(?:property|name)\s*=\s*["']([^"']+)["']/i)?.[1];
+    const value = tag.match(/\bcontent\s*=\s*["']([^"']*)["']/i)?.[1];
     if (name?.toLowerCase() === key.toLowerCase() && value) return plainText(value);
   }
   return "";
