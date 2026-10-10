@@ -47,13 +47,11 @@ function plainText(value: unknown): string {
 }
 
 function meta(html: string, key: string): string {
-  const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const patterns = [
-    new RegExp(\`<meta[^>]+(?:property|name)=["']\${escaped}["'][^>]+content=["']([^"']*)["'][^>]*>\`, "i"),
-    new RegExp(\`<meta[^>]+content=["']([^"']*)["'][^>]+(?:property|name)=["']\${escaped}["'][^>]*>\`, "i"),
-  ];  for (const pattern of patterns) {
-    const match = html.match(pattern);
-    if (match?.[1]) return plainText(match[1]);
+  const tags = html.match(/<meta\\b[^>]*>/gi) ?? [];
+  for (const tag of tags) {
+    const name = tag.match(/\\b(?:property|name)\\s*=\\s*["']([^"']+)["']/i)?.[1];
+    const value = tag.match(/\\bcontent\\s*=\\s*["']([^"']*)["']/i)?.[1];
+    if (name?.toLowerCase() === key.toLowerCase() && value) return plainText(value);
   }
   return "";
 }
