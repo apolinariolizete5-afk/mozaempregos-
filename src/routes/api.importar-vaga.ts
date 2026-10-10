@@ -49,10 +49,9 @@ function plainText(value: unknown): string {
 function meta(html: string, key: string): string {
   const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const patterns = [
-    new RegExp('<meta[^>]+(?:property|name)=[\"\\']' + escaped + '[\"\\'][^>]+content=[\"\\']([^\"\\']*)[\"\\'][^>]*>', "i"),
-    new RegExp('<meta[^>]+content=[\"\\']([^\"\\']*)[\"\\'][^>]+(?:property|name)=[\"\\']' + escaped + '[\"\\'][^>]*>', "i"),
-  ];
-  for (const pattern of patterns) {
+    new RegExp(\`<meta[^>]+(?:property|name)=["']\${escaped}["'][^>]+content=["']([^"']*)["'][^>]*>\`, "i"),
+    new RegExp(\`<meta[^>]+content=["']([^"']*)["'][^>]+(?:property|name)=["']\${escaped}["'][^>]*>\`, "i"),
+  ];  for (const pattern of patterns) {
     const match = html.match(pattern);
     if (match?.[1]) return plainText(match[1]);
   }
