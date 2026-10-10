@@ -1,8 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ChevronLeft, ImagePlus, Loader2, Upload } from "lucide-react";
+import { ChevronLeft, ImagePlus, Loader2, Upload, Link2, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,6 +45,61 @@ function NovaVagaPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string>("");
   const [saving, setSaving] = useState(false);
+  const [sourceUrl, setSourceUrl] = useState("");
+  const [importing, setImporting] = useState(false);
+  const [importMessage, setImportMessage] = useState("");
+  const importSequence = useRef(0);
+
+  // Importa automaticamente depois de o link ser colado ou terminado de escrever.
+  useEffect(() => {
+    const candidate = sourceUrl.trim();
+    if (!candidate) {
+      setImportMessage("");
+      return;
+    }
+    let parsed: URL;
+    try { parsed = new URL(candidate); } catch { return; }
+    if (!["http:", "https:"].includes(parsed.protocol)) return;
+
+    const sequence = ++importSequence.current;
+    const timer = window.setTimeout(async () => {
+      setImporting(true);
+      setImportMessage("A importar os dados da vaga…");
+      try {
+        const response = await fetch("/api/importar-vaga", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: candidate }),
+        });
+        const payload = await response.json() as { vaga?: Partial<typeof form>; error?: string };
+        if (sequence !== importSequence.current) return;
+        if (!response.ok || !payload.vaga) throw new Error(payload.error || "Não foi possível importar esta página.");
+        const imported = payload.vaga;
+        setForm((current) => ({
+          ...current,
+          titulo: imported.titulo || current.titulo,
+          empresa: imported.empresa || current.empresa,
+          provincia: PROVINCIAS.find((p) => p.toLocaleLowerCase("pt-PT") === (imported.provincia || "").toLocaleLowerCase("pt-PT")) || current.provincia,
+          tipo_contrato: imported.tipo_contrato || current.tipo_contrato,
+          salario: imported.salario || current.salario,
+          prazo: imported.prazo || current.prazo,
+          descricao: imported.descricao || current.descricao,
+          requisitos: imported.requisitos || current.requisitos,
+          como_candidatar: imported.como_candidatar || current.como_candidatar,
+          email_candidatura: imported.email_candidatura || current.email_candidatura,
+          imagem_url: imported.imagem_url || current.imagem_url,
+        }));
+        if (imported.imagem_url && !file) setPreview(imported.imagem_url);
+        setImportMessage("Dados importados. Reveja os campos abaixo e corrija o que faltar antes de publicar.");
+      } catch (error) {
+        if (sequence !== importSequence.current) return;
+        setImportMessage(error instanceof Error ? error.message : "Não foi possível importar. Pode preencher os campos manualmente.");
+      } finally {
+        if (sequence === importSequence.current) setImporting(false);
+      }
+    }, 850);
+    return () => window.clearTimeout(timer);
+  }, [sourceUrl]);
 
   function update<K extends keyof typeof form>(k: K, v: (typeof form)[K]) {
     setForm((s) => ({ ...s, [k]: v }));
@@ -129,7 +184,7 @@ function NovaVagaPage() {
       <p className="text-sm text-muted-foreground">Preencha os detalhes abaixo.</p>
 
       <form onSubmit={submit} className="mt-6 space-y-5 rounded-2xl border border-border bg-card p-6">
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-2">\n          <Field label="Colar link da vaga para importar automaticamente">\n            <div className="relative">\n              <Link2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />\n              <Input value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} placeholder="https://site.com/vaga..." className="pl-9" inputMode="url" />\n            </div>\n          </Field>\n          <p className="text-xs text-muted-foreground">Ao colar o link, tentamos preencher os campos automaticamente. O link original não será guardado na vaga publicada.</p>\n          {importMessage && <p role="status" aria-live="polite" className={`text-sm ${importing ? "text-muted-foreground" : "text-foreground"}`}>{importing && <Loader2 className="mr-1 inline h-3.5 w-3.5 animate-spin" />}{!importing && importMessage.startsWith("Dados importados") && <Sparkles className="mr-1 inline h-3.5 w-3.5" />}{importMessage}</p>}\n        </div>\n\n        <div className="grid gap-4 md:grid-cols-2">
           <Field label="Título da vaga *">
             <Input value={form.titulo} onChange={(e) => update("titulo", e.target.value)} required />
           </Field>
